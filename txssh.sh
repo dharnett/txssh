@@ -83,11 +83,11 @@ function clusterssh() {
         "${PROGRAM_SSH}" "${host}"
     fi
 
+    # choose layout
+    "${PROGRAM_TMUX}" select-layout -t "${WINDOW_TITLE}" "${WINDOW_LAYOUT}"
+
     (( ++host_count ))
   done
-
-  # choose layout
-  "${PROGRAM_TMUX}" select-layout -t "${WINDOW_TITLE}" "${WINDOW_LAYOUT}"
 
   # synchronize input between panes
   "${PROGRAM_TMUX}" set-option -t "${WINDOW_TITLE}" synchronize-panes on
