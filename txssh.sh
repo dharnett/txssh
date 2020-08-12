@@ -21,6 +21,7 @@ PROGRAM_SSH='ssh'
 PROGRAM_TMUX='tmux'
 WINDOW_TITLE=''
 WINDOW_LAYOUT='tiled'
+CLUSTER=''
 
 #
 # usage()
@@ -33,11 +34,12 @@ function usage() {
   echo 'usage: txssh [-hv] [-e ssh] [-l layout] [-t title] host ...'
   echo
   echo 'options:'
-  echo '  -e          - executable to use for ssh (default: ssh)'
-  echo '  -h          - select the even-horizontal layout'
-  echo '  -l layout   - select a custom layout (default: tiled)'
-  echo '  -t title    - set the target window title (default: tssh)'
-  echo '  -v          - select the even-vertical layout'
+  echo '  -c filename     - use list of hosts in ~/.txssh/filename'
+  echo '  -e              - executable to use for ssh (default: ssh)'
+  echo '  -h              - select the even-horizontal layout'
+  echo '  -l layout       - select a custom layout (default: tiled)'
+  echo '  -t title        - set the target window title (default: tssh)'
+  echo '  -v              - select the even-vertical layout'
   echo
 
   exit "${rc}"
@@ -69,8 +71,21 @@ function die() {
 # to the specified hosts.
 #
 function clusterssh() {
-  local -ar host_list=( "$@" )
+  local -a host_list=( "$@" )
   local -i host_count
+  local line
+
+  if [[ -n "${CLUSTER}" ]]; then
+    if [[ -s "${HOME}/.txssh/${CLUSTER}" ]]; then
+      #
+      # XXX: Do not use readarray to try and stay compatible with the version
+      # of bash 3.x that shipped with macOS.
+      #
+      for line in $(< "${HOME}/.txssh/${CLUSTER}" ); do
+        host_list+=( "${line}" )
+      done
+    fi
+  fi
 
   # create tmux window and panes
   host_count=1
@@ -112,8 +127,9 @@ function main() {
   fi
 
   # parse options
-  while getopts "e:hl:t:v" option; do
+  while getopts "c:e:hl:t:v" option; do
     case "${option}" in
+      'c') CLUSTER="${OPTARG}" ;;
       'e') PROGRAM_SSH="${OPTARG}" ;;
       'h') WINDOW_LAYOUT='even-horizontal' ;;
       'l') WINDOW_LAYOUT="${OPTARG}" ;;
