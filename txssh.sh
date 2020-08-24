@@ -2,11 +2,11 @@
 # vim: set ft=bash sw=2 ts=2 sts=2 et ai:
 #
 # Copyright 2020 Daniel Harnett <daniel.harnett@gmail.com>
-# 
+#
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
 # copyright notice and this permission notice appear in all copies.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
 # REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
 # AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
@@ -15,6 +15,8 @@
 # OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
+
+set -euo pipefail
 
 # globals
 PROGRAM_SSH='ssh'
@@ -31,9 +33,10 @@ CLUSTER=''
 function usage() {
   local -i rc="${1:-0}"
 
-  echo 'usage: txssh [-hv] [-e ssh] [-l layout] [-t title] host ...'
+  echo 'usage: txssh [-Ahv] [-e ssh] [-l layout] [-t title] host ...'
   echo
   echo 'options:'
+  echo '  -A              - start a new ssh-agent per connection'
   echo '  -c filename     - use list of hosts in ~/.txssh/filename'
   echo '  -e              - executable to use for ssh (default: ssh)'
   echo '  -h              - select the even-horizontal layout'
@@ -127,8 +130,9 @@ function main() {
   fi
 
   # parse options
-  while getopts "c:e:hl:t:v" option; do
+  while getopts "Ac:e:hl:t:v" option; do
     case "${option}" in
+      'A') PROGRAM_SSH='txssh-agent-helper' ;;
       'c') CLUSTER="${OPTARG}" ;;
       'e') PROGRAM_SSH="${OPTARG}" ;;
       'h') WINDOW_LAYOUT='even-horizontal' ;;
